@@ -1,0 +1,288 @@
+<?xml version="1.0"?>
+<robot name="fisheyes" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  
+  <!-- properties -->
+  <property name="camera_length" value="0.002" />
+  <property name="camera_width" value="0.04" />
+  <property name="camera_height" value="0.04" />
+  <property name="camera_joint_z" value="0.138" />
+  <property name="camera_joint_x" value="0.025" />
+
+  <property name="camera_holder_length" value="0.02" />
+  <property name="camera_holder_width" value="0.1" />
+  <property name="camera_holder_height" value="0.005" />
+  <property name="camera_holder_rod_height" value="0.12" />
+  <property name="camera_holder_rod_radius" value="0.0025" />
+
+  <property name="M_PI" value="3.1415926535897931" />
+  <property name="M_PI_2" value="1.570796327" />
+  <property name="M_PI_4" value="0.78539816339" />
+  
+  <xacro:macro name="fisheyes" params="parent x y z roll pitch yaw"> <!--fb : front, back ; lr: left, right -->
+
+	<!-- camera rods -->
+	<link name="camera_rods">
+    <collision>
+      <origin xyz="0 ${camera_holder_width/2-camera_holder_rod_radius} ${camera_holder_rod_height/2}" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="${camera_holder_rod_height}" radius="${camera_holder_rod_radius}"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 ${camera_holder_width/2-camera_holder_rod_radius} ${camera_holder_rod_height/2}" rpy="0 0 0" />
+      <geometry>
+        <cylinder length="${camera_holder_rod_height}" radius="${camera_holder_rod_radius}"/>
+      </geometry>
+      <material name="White" />
+    </visual>
+    <collision>
+      <origin xyz="0 ${-camera_holder_width/2+camera_holder_rod_radius} ${camera_holder_rod_height/2}" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="${camera_holder_rod_height}" radius="${camera_holder_rod_radius}"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 ${-camera_holder_width/2+camera_holder_rod_radius} ${camera_holder_rod_height/2}" rpy="0 0 0" />
+      <geometry>
+        <cylinder length="${camera_holder_rod_height}" radius="${camera_holder_rod_radius}"/>
+      </geometry>
+      <material name="White" />
+    </visual>
+  </link>
+
+  <gazebo reference="camera_rods">
+    <material>Gazebo/Yellow</material>
+    <turnGravityOff>false</turnGravityOff>
+  </gazebo>
+
+  <joint name="camera_rods_joint" type="fixed">
+    <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}" />
+    <parent link="${parent}"/>
+    <child link="camera_rods" />
+  </joint>
+
+
+
+	<!-- camera holder -->
+	<link name="camera_holder">
+    <collision>
+      <origin xyz="0 0 ${camera_joint_z-0.015}" rpy="0 0 0"/>
+      <geometry>
+        <box size="${camera_holder_length} ${camera_holder_width} ${camera_holder_height}"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 ${camera_joint_z-0.015}" rpy="0 0 0" />
+      <geometry>
+        <box size="${camera_holder_length} ${camera_holder_width} ${camera_holder_height}"/>
+      </geometry>
+      <material name="White" />
+    </visual>
+  </link>
+
+
+  <gazebo reference="camera_holder">
+    <material>Gazebo/Red</material>
+    <turnGravityOff>false</turnGravityOff>
+  </gazebo>
+
+
+  <joint name="camera_holder_joint" type="fixed">
+    <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}" />
+    <parent link="${parent}"/>
+    <child link="camera_holder" />
+  </joint>
+
+
+
+
+	<!-- camera sensor -->
+	<link name="camera_link">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${camera_length} ${camera_width} ${camera_height}"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="${camera_length} ${camera_width} ${camera_height}"/>
+      </geometry>
+      <material name="White" />
+    </visual>
+  </link>
+
+  <gazebo reference="camera_link">
+    <material>Gazebo/Red</material>
+    <turnGravityOff>false</turnGravityOff>
+      <sensor name='camera' type='wideanglecamera'>
+    <camera name="head">
+	<save enabled = "true">
+	   <path>/tmp/camera_save</path>
+	</save>	
+      <horizontal_fov>3.1415</horizontal_fov>
+      <image>
+        <width>1920</width>
+        <height>1080</height>
+        <format>R8G8B8</format>
+      </image>
+      <clip>
+        <near>0.1</near>
+        <far>100</far>
+      </clip>
+
+		<lens>
+      <!-- type element is mandatory -->
+      <type>custom</type>
+      <!-- manually defined mapping function r = c1*f*fun(theta/c2 + c3) -->
+      <!-- More information here: https://en.wikipedia.org/wiki/Fisheye_lens#Mapping_function -->
+      <custom_function>
+        <c1>1.05</c1>
+        <!-- linear scaling -->
+        <c2>4</c2>
+        <!-- angle scaling -->
+        <f>3.6</f>
+        <!-- one more scaling parameter -->
+        <fun>tan</fun>
+        <!-- one of sin,tan,id -->
+      </custom_function> 
+      <!-- if it is set to `true` your horizontal FOV will ramain as defined -->
+      <!-- othervise it depends on lens type and custom function, if there is one -->
+      <scale_to_hfov>true</scale_to_hfov>
+      <!-- clip everything that is outside of this angle -->
+      <cutoff_angle>3.1415</cutoff_angle>
+      <!-- resolution of the cubemap texture, the highter it is - the sharper is your image -->
+      <env_texture_size>512</env_texture_size>
+    </lens>
+
+    </camera>
+    <always_on>1</always_on>
+    <update_rate>30</update_rate>
+    <visualize>1</visualize>
+		<plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+		  <alwaysOn>true</alwaysOn>
+		  <updateRate>0.0</updateRate>
+		  <cameraName>iris/camera</cameraName>
+		  <imageTopicName>image_raw</imageTopicName>
+		  <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+		  <frameName>base_link</frameName>
+		  <hackBaseline>0.07</hackBaseline>
+		  <!--distortionK1>0.0</distortionK1>
+		  <distortionK2>0.0</distortionK2>
+		  <distortionK3>0.0</distortionK3>
+		  <distortionT1>0.0</distortionT1>
+		  <distortionT2>0.0</distortionT2-->
+		</plugin>
+
+  </sensor>
+  </gazebo>
+
+  <joint name="camera_joint" type="fixed">
+    <origin xyz="${x+camera_joint_x} ${y} ${z+camera_joint_z}" rpy="${roll} ${pitch+M_PI_4} ${yaw}" />
+    <parent link="${parent}"/>
+    <child link="camera_link" />
+  </joint>
+
+
+
+
+<!-- camera sensor -->
+<link name="back_camera_link">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${camera_length} ${camera_width} ${camera_height}"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="${camera_length} ${camera_width} ${camera_height}"/>
+      </geometry>
+      <material name="White" />
+    </visual>
+  </link>
+
+  <gazebo reference="back_camera_link">
+    <material>Gazebo/Red</material>
+    <turnGravityOff>false</turnGravityOff>
+      <sensor name='camera' type='wideanglecamera'>
+    <camera name="head">
+	<save enabled = "true">
+	   <path>/tmp/camera_save</path>
+	</save>	
+      <horizontal_fov>3.1415</horizontal_fov>
+      <image>
+        <width>1920</width>
+        <height>1080</height>
+        <format>R8G8B8</format>
+      </image>
+      <clip>
+        <near>0.1</near>
+        <far>100</far>
+      </clip>
+
+ <lens>
+      <!-- type element is mandatory -->
+      <type>custom</type>
+      <!-- manually defined mapping function r = c1*f*fun(theta/c2 + c3) -->
+      <!-- More information here: https://en.wikipedia.org/wiki/Fisheye_lens#Mapping_function -->
+      <custom_function>
+        <c1>1.05</c1>
+        <!-- linear scaling -->
+        <c2>4</c2>
+        <!-- angle scaling -->
+        <f>3.6</f>
+        <!-- one more scaling parameter -->
+        <fun>tan</fun>
+        <!-- one of sin,tan,id -->
+      </custom_function> 
+      <!-- if it is set to `true` your horizontal FOV will ramain as defined -->
+      <!-- othervise it depends on lens type and custom function, if there is one -->
+      <scale_to_hfov>true</scale_to_hfov>
+      <!-- clip everything that is outside of this angle -->
+      <cutoff_angle>3.1415</cutoff_angle>
+      <!-- resolution of the cubemap texture, the highter it is - the sharper is your image -->
+      <env_texture_size>512</env_texture_size>
+    </lens>
+
+    </camera>
+    <always_on>1</always_on>
+    <update_rate>30</update_rate>
+    <visualize>1</visualize>
+    <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+    <alwaysOn>true</alwaysOn>
+    <updateRate>0.0</updateRate>
+    <cameraName>iris/camera_back</cameraName>
+    <imageTopicName>image_raw</imageTopicName>
+    <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+    <frameName>camera_link</frameName>
+    <hackBaseline>0.07</hackBaseline>
+    <!--distortionK1>0.0</distortionK1>
+    <distortionK2>0.0</distortionK2>
+    <distortionK3>0.0</distortionK3>
+    <distortionT1>0.0</distortionT1>
+    <distortionT2>0.0</distortionT2-->
+  </plugin>
+
+  </sensor>
+  </gazebo>
+
+
+
+
+
+
+
+
+  <joint name="back_camera_joint" type="fixed">
+    <origin xyz="${x-camera_joint_x} ${y} ${z+camera_joint_z}" rpy="${roll} ${pitch+M_PI_4} ${yaw+M_PI}" />
+    <parent link="${parent}"/>
+    <child link="back_camera_link" />
+  </joint>
+
+
+   
+  </xacro:macro>
+</robot>

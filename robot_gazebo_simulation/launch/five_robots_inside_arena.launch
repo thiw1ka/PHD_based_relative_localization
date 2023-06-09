@@ -1,0 +1,147 @@
+<!-- -->
+<launch>
+  <param name="/use_sim_time" value="true" />
+ 
+  <!-- start world -->
+  <include file="$(find gazebo_ros)/launch/empty_world.launch">
+  <arg name="world_name" value="$(find catabot_gazebo_simulation)/world/arena.world"/>
+<!-- elevator_world.launch
+empty_world.launch
+mud_world.launch
+range_world.launch
+rubble_world.launch
+shapes_world.launch
+willowgarage_world.launch -->
+    <!-- more default parameters can be changed here -->	
+  </include>
+
+<!--rviz visualization-->
+<arg    name = "rviz_config_path"       
+        default   = "$(find catabot_gazebo_simulation)/simulation.rviz" />
+
+<node   name = "rviz_visualizer_node" 
+        pkg  = "rviz" 
+        type = "rviz" 
+        args = "-d $(find catabot_gazebo_simulation)/simulation.rviz" 
+/>
+
+  <param name="robot_description" command="$(find xacro)/xacro --inorder
+                       '$(find catabot_gazebo_simulation)/urdf/differential_drive_cam_lidar_fisheyes.xacro'
+                       	with_cam:=true
+												with_ydlidar:=true
+												with_fisheyes:=false
+												cam_x:=0.0
+												cam_y:=0.0
+												cam_z:=0.0
+												cam_roll:=0.0
+												cam_pitch:=0.0
+												cam_yaw:=0.0
+												cam_W:=640
+												cam_H:=480
+												cam_hfov:=1.0472
+												cam_focal:=3.6
+											"/> 
+
+  <arg name="robots_speed" default = "0.1"/>
+
+  <node name = "robot1_cam_target" pkg = "catabot_gazebo_simulation" type = "color_extraction.py"  />
+
+  <!-- BEGIN ROBOT 1-->
+  <group ns="robot1">
+    <arg name="robot_index" default = "1"/>
+    <param name="tf_prefix" value="robot$(arg robot_index)_tf" />
+    <arg name="tf_pose" value="-2.0 0.0 0.0" />
+    <include file="$(find catabot_gazebo_simulation)/launch/single_differential_drive.launch" >
+      <arg name="init_pose" value="-x -2.0 -y 0.0 -z 0.2" />
+      <arg name="robot_name"  value="Robot$(arg robot_index)" />
+    </include>
+
+    <node name="motion$(arg robot_index)" pkg="catabot_gazebo_simulation"  type="unicycle_avoidance_random.py" output="log">
+      <remap from="/scan" to="/Robot$(arg robot_index)/scan"/>
+      <remap from="/cmd_vel" to="/Robot$(arg robot_index)/cmd_vel"/>
+      <param name="linvel" type="double" value="$(arg robots_speed)"/>
+	  </node>
+
+    <!-- The robot location extractor via lidar point  -->
+    <include file = "$(find lidarScan_robot_extractor)/launch/robot_extractor_gazebo.launch" />
+
+  </group>
+
+  <!-- BEGIN ROBOT 2-->
+  <group ns="robot2">
+  <arg name="robot_index" default = "2"/>
+    <param name="tf_prefix" value="robot$(arg robot_index)_tf" />
+    <arg name="tf_pose" value="0.0 0.0 0.0" />
+    <include file="$(find catabot_gazebo_simulation)/launch/single_differential_drive.launch" >
+      <arg name="init_pose" value="-x 0.0 -y 0.0 -z 0.2" />
+      <arg name="robot_name"  value="Robot$(arg robot_index)" />
+
+    </include>
+
+
+    <node name="motion$(arg robot_index)" pkg="catabot_gazebo_simulation"  type="unicycle_avoidance_random.py" output="log">
+      <remap from="/scan" to="/Robot$(arg robot_index)/scan"/>
+      <remap from="/cmd_vel" to="/Robot$(arg robot_index)/cmd_vel"/>
+      <param name="linvel" type="double" value="$(arg robots_speed)"/>
+	  </node>
+  </group>
+
+  <!-- BEGIN ROBOT 3-->
+  <group ns="robot3">
+  <arg name="robot_index" default = "3"/>
+    <param name="tf_prefix" value="robot$(arg robot_index)_tf" />
+    <arg name="tf_pose" value="2.0 0.0 0.0" />
+    <include file="$(find catabot_gazebo_simulation)/launch/single_differential_drive.launch" >
+      <arg name="init_pose" value="-x 2.0 -y 0.0 -z 0.2" />
+
+      <arg name="robot_name"  value="Robot$(arg robot_index)" />
+
+    </include>
+
+
+    <node name="motion$(arg robot_index)" pkg="catabot_gazebo_simulation"  type="unicycle_avoidance_random.py" output="log">
+      <remap from="/scan" to="/Robot$(arg robot_index)/scan"/>
+      <remap from="/cmd_vel" to="/Robot$(arg robot_index)/cmd_vel"/>
+      <param name="linvel" type="double" value="$(arg robots_speed)"/>
+	  </node>
+  </group>
+
+  <!-- BEGIN ROBOT 4-->
+  <group ns="robot4">
+  <arg name="robot_index" default = "4"/>
+    <param name="tf_prefix" value="robot$(arg robot_index)_tf" />
+    <arg name="tf_pose" value="-0.5 -2.0 0.0" />
+    <include file="$(find catabot_gazebo_simulation)/launch/single_differential_drive.launch" >
+      <arg name="init_pose" value="-x -0.5 -y -2.0 -z 0.2" />
+      <arg name="robot_name" value="Robot$(arg robot_index)" />
+
+    </include>
+
+
+    <node name="motion$(arg robot_index)" pkg="catabot_gazebo_simulation"  type="unicycle_avoidance_random.py" output="log">
+      <remap from="/scan" to="/Robot$(arg robot_index)/scan"/>
+      <remap from="/cmd_vel" to="/Robot$(arg robot_index)/cmd_vel"/>
+      <param name="linvel" type="double" value="$(arg robots_speed)"/>
+	  </node>
+  </group>
+
+
+  <!-- BEGIN ROBOT 5-->
+  <group ns="robot5">
+  <arg name="robot_index" default = "5"/>
+    <param name="tf_prefix" value="robot$(arg robot_index)_tf" />
+    <arg name="tf_pose" value="-0.5 2.0 0.0" />
+    <include file="$(find catabot_gazebo_simulation)/launch/single_differential_drive.launch" >
+      <arg name="init_pose" value="-x 0.5 -y 2.0 -z 0.2" />
+      <arg name="robot_name"  value="Robot$(arg robot_index)" />
+
+    </include>
+
+    <node name="motion$(arg robot_index)" pkg="catabot_gazebo_simulation"  type="unicycle_avoidance_random.py" output="log">
+      <remap from="/scan" to="/Robot$(arg robot_index)/scan"/>
+      <remap from="/cmd_vel" to="/Robot$(arg robot_index)/cmd_vel"/>
+      <param name="linvel" type="double" value="$(arg robots_speed)"/>
+	  </node>
+  </group>
+
+</launch>

@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<robot name="ydlidar" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  
+  <!-- properties -->
+  <!-- ydlidar Laser scanner -->
+  <property name="ydlidar_radius" value="0.033" />
+  <property name="ydlidar_height" value="0.055" />
+  <property name="ydlidar_ray_origin_height" value="0.0175" />
+  <property name="ydlidar_ray_max_range" value="5.0" />
+
+  <property name="M_PI" value="3.1415926535897931" />
+  <property name="M_PI_2" value="1.570796327" />
+  <property name="M_PI_4" value="0.78539816339" />
+  
+  <xacro:macro name="ydlidar" params="parent x y z roll pitch yaw"> <!--fb : front, back ; lr: left, right -->
+
+
+<!-- ydlidar laser sensor -->
+<link name="ydlidar_link">
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <cylinder length="${ydlidar_height}" radius="${ydlidar_radius}"/>
+      </geometry>
+    </collision>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <cylinder length="${ydlidar_height}" radius="${ydlidar_radius}"/>
+      </geometry>
+      <material name="Blue" />
+    </visual>
+  </link>
+
+  <gazebo reference="ydlidar_link">
+    <material>Gazebo/Blue</material>
+    <turnGravityOff>false</turnGravityOff>
+    <sensor type="ray" name="head_ydlidar_sensor">
+      <pose>0 0 ${ydlidar_ray_origin_height} 0 0</pose>
+      <!--visualize>false</visualize-->
+      <visualize>false</visualize>
+      <update_rate>8.3</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>720</samples>
+            <resolution>1</resolution>
+            <min_angle>-3.14159274101</min_angle>
+            <max_angle>3.14159274101</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>${ydlidar_ray_max_range}</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="gazebo_ros_head_ydlidar_controller" filename="libgazebo_ros_laser.so">
+        <topicName>scan</topicName>
+        <frameName>ydlidar_link</frameName>
+        <robotBaseFrame>base_footprint</robotBaseFrame>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <joint name="ydlidar_joint" type="fixed">
+    <origin xyz="${x} ${y} ${z+ydlidar_height/2}" rpy="${roll} ${pitch} ${yaw}" />
+    <parent link="${parent}"/>
+    <child link="ydlidar_link" />
+  </joint>
+
+   
+  </xacro:macro>
+</robot>

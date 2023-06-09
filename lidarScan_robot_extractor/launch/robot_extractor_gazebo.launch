@@ -1,0 +1,22 @@
+<launch>
+
+<param name = "simulation"            type = "bool"       value="true"          />
+<param name = "wallMeasurements"      type = "bool"       value="true"          />
+<param name = "lidarScanTopicName"    type = "string"     value="/Robot1/scan"  />
+<param name = "robotOdomTopicName"    type = "string"     value="/Robot1/odom"  />
+<param name = "resultTopicName"       type = "string"     value="/lidar_extractions"  />
+
+
+<node   name="lidar_points_extractor" 
+        pkg="lidarScan_robot_extractor"  
+        type="lidarScan_robot_extractor_node" 
+        output="log"                        >
+    <!-- <remap from="/scan" to="/Robot$(arg robot_index)/scan"/> -->
+</node>
+
+
+
+
+
+
+</launch>
