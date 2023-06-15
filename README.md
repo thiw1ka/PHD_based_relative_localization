@@ -32,8 +32,8 @@ https://github.com/thiw1ka/PHD_based_relative_localization/assets/45106731/c2067
 **This video shows filter results.**
 legend -
   - Red color dots - lidar points
-  - yellow color box filter estimation
-  - stright line - camera measurements projected to world frame
+  - Green color box filter estimation
+  - Stright line - camera measurements projected to world frame
 
 https://github.com/thiw1ka/PHD_based_relative_localization/assets/45106731/4ef53e80-6d70-409f-8372-afb3971ac0e8
 
