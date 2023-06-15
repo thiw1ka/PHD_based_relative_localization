@@ -24,31 +24,18 @@
 <include file = "$(find lidarScan_robot_extractor)/launch/robot_extractor_gazebo.launch" />
 <rosparam   param = "pd_for_each_robot">        [0.9, 0.9, 0.9, 0.9, 0.9, 0.9]           </rosparam> 
 
-<group ns = "adaptive">
-    <param name = "filter_setting"      type = "str"    value = "adaptive"      />
-    <param name = "adaptivePSParam"     type = "int"    value = "10"            /> <!-- how long to keep estimate in PS-->
-    <param name = "sensor_pd"           type = "bool"   value = "false"         />
-    <!-- cpp nodes here-->
-    <!-- <node 
-        name    = "phd_filter_node" 
-        pkg     = "phd_filter_extension"  
-        type    = "phd_filter_extension_node" 
-        output  = "log"
-    /> -->
-</group>
-
 <group ns = "Standard">
     <param name = "filter_setting"      type = "str"            value = "Standard"  />
     <param name = "PD"                  type = "double"         value = "0.9"       />
     <param name = "PS"                  type = "double"         value = "0.9"       />
     <param name    = "sensor_pd"        type = "bool"           value = "false"     />
     <!-- cpp nodes here-->
-    <!-- <node 
+    <node 
         name    = "phd_filter_node" 
         pkg     = "phd_filter_extension"  
         type    = "phd_filter_extension_node" 
         output  = "log"
-    /> -->
+    />
 </group>
 
 <group ns = "adaptive_modified">
@@ -56,12 +43,12 @@
     <param      name    = "adaptivePSParam"         type = "int"        value = "10"                        />
     <param      name    = "sensor_pd"               type = "bool"       value = "true"                      />
     <!-- cpp nodes here-->
-    <node       name    = "phd_filter_node"          
+    <!-- <node       name    = "phd_filter_node"          
                 pkg     = "phd_filter_extension"    
                 type    = "phd_filter_extension_node"  
                 output  = "log"
                 required = "true"
-    />
+    /> -->
 </group>
 
 <!-- plotter -->
