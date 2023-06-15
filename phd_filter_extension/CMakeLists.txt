@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(lidarScan_robot_extractor)
+project(phd_filter_extension)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 add_compile_options(-std=c++17)
@@ -12,11 +12,20 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   std_msgs
+  uri_soft_base
+  pcl_conversions
+  pcl_ros
+  # uri_soft_opencv_vis
+  message_generation
   utility_functions
+  # googletest
 )
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
+find_package(PCL)
+find_package(OpenCV)
+message(WARNING ${synthetic_measurement_generator_INCLUDE_DIRS})
 
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -56,11 +65,10 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(
+  FILES
+  blindspotServiceMsg.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -70,10 +78,12 @@ find_package(catkin REQUIRED COMPONENTS
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs
-# )
+generate_messages(
+  DEPENDENCIES
+  std_msgs  # Or other packages containing msgs
+  geometry_msgs
+
+)
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -106,8 +116,8 @@ find_package(catkin REQUIRED COMPONENTS
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
  INCLUDE_DIRS include
- LIBRARIES lidarScan_robot_extractor
-#  CATKIN_DEPENDS eigen_conversions roscpp rospy std_msgs utility_functions
+ LIBRARIES catabot_phd_tracking
+#  CATKIN_DEPENDS eigen_conversions roscpp rospy std_msg
 #  DEPENDS system_lib
 )
 
@@ -120,23 +130,33 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${utility_functions_INCLUDE_DIRS}
 )
 
-## Declare a C++ library
+# Declare a C++ library
 add_library(${PROJECT_NAME}
-  src/lidarScan_robot_extractor.cpp
-  src/blindspots_for_robots_in_lidar.cpp
+  # src/catabot_phd_tracking_node.cpp
+  src/filter.cpp
 )
+
+add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(synthetic_measurement_generator ${catkin_EXPORTED_TARGETS})
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(${PROJECT_NAME}_node src/lidarScan_robot_extractor_node.cpp)
+add_executable(${PROJECT_NAME}_node src/phd_filter_extension_node.cpp)
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(${PROJECT_NAME}_node
+  ${PROJECT_NAME}
+  ${catkin_LIBRARIES}
+)
+
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -146,13 +166,9 @@ add_executable(${PROJECT_NAME}_node src/lidarScan_robot_extractor_node.cpp)
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
-add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}_node
-  ${PROJECT_NAME}
-  ${catkin_LIBRARIES}
-)
+
 
 #############
 ## Install ##
@@ -201,9 +217,14 @@ target_link_libraries(${PROJECT_NAME}_node
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_lidarScan_robot_extractor.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test src/test/test_catabot_phd_tracking.cc)
 # if(TARGET ${PROJECT_NAME}-test)
-#   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
+#   target_link_libraries(${PROJECT_NAME}-test 
+#                         ${PROJECT_NAME}
+#                         # GTest::gtest_main
+#                         )
+#   # include(GoogleTest)
+#   # gtest_discover_tests(${PROJECT_NAME}-test)
 # endif()
 
 ## Add folders to be run by python nosetests

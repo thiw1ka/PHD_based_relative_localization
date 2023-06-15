@@ -4,8 +4,9 @@ chrono::system_clock::time_point timer_start;
 chrono::duration<double, std::milli> timer_duration;
 
 void LidarObstacleExtraction::print_pair (vector<pair<double,double >>& points){
+
     cout<<"I am printing pairs---"<<endl;
-    for(int T = 0; T < points.size(); T++){
+    for(int T=0;T<points.size();T++){
         cout << points[T].first << " , "<< points[T].second << endl;
     }
 	cout<<"printing pairs finished---"<<endl;
@@ -48,11 +49,12 @@ geometry_msgs::Point32 LidarObstacleExtraction::check_data_valid_for_robot (cons
 		p.y = mean_dist * std::sin(angleRad);
 		p.z = 0.0;
 		std::printf("checking lidar point_inside x: %f, y: %f, z: %f ",p.x, p.y, p.z);
-		if (computeInsideBoxPtr->isPointInsideBox(odom_cb.homogeneous_tranform_matrix,p)) {
+		if (computeInsideBoxPtr->isPointInsideBox(homogMatrix,p)) {
 			std::printf(": Inside \n");
 			return p;
 		}
 		std::printf(": NOT_inside \n");
+
 	}
 
 	return pointEmpty;
@@ -64,9 +66,11 @@ geometry_msgs::Point32 LidarObstacleExtraction::check_data_valid_for_robot (cons
 void LidarObstacleExtraction::scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan){
 
 	cout<<"----- Lidar new scan-----"<<1+counter<<endl;
+	homogMatrix = odom_cb.get_homog();
 	sensor_msgs::PointCloud msg;
 	msg.header = scan->header;
 	msg.points.clear();
+
 	obj_at_back = false;
 	int count = scan->scan_time / scan->time_increment;//cout<< "count at the begining = "<<count<<endl;
 	if (scan->scan_time==0) {//in simulation the scan time is zero
@@ -150,8 +154,10 @@ void LidarObstacleExtraction::scanCallback(const sensor_msgs::LaserScan::ConstPt
 		}
 		// std::printf("for loop: %i --- \n",i);
 	}
-
-	pub_locations.publish(msg);
+	pub_locations.publish(msg); // publish lidar raw extractions
+	blindspot ->checkPdForEachMeasurementFromLidar(msg, homogMatrix); //only pd allowed robot measurements will be remained
+	pub_after_blindspot.publish(msg); //publish after blindspot check
 	counter++;
 	// std::printf("scan completed --- \n");
+
 }

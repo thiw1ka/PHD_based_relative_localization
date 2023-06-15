@@ -16,18 +16,18 @@
 #include "geometry_msgs/Point32.h"
 #include "utility_functions/utility_functions.hpp"
 #include "nav_msgs/Odometry.h"
+#include "lidarScan_robot_extractor/blindspots_for_robots_in_lidar.hpp"
 
 // #include "swarm_cherokeys/LidarMeas.h"
 
-#ifndef _LIDAR_DATA_PROC_HPP
-#define _LIDAR_DATA_PROC_HPP
+#ifndef _LIDARSCAN_ROBOT_EXTRACTOR_HPP
+#define _LIDARSCAN_ROBOT_EXTRACTOR_HPP
 
 
 
 #define RAD2DEG(x) ((x)*180./M_PI)
 using namespace std;
 using namespace Eigen;
-
 
 class LidarObstacleExtraction{
 
@@ -41,7 +41,13 @@ class LidarObstacleExtraction{
 
 	void scanCallback(const sensor_msgs::LaserScan::ConstPtr& scan);
 
+	// void scanCallback_v2(const sensor_msgs::LaserScan::ConstPtr& scan);
+
 	ros::Subscriber sub, subOdom;
+
+	// std::vector<GaussianComponent> measurements,measurements_ready;
+	// std::vector<geometry_msgs::Point32> measurements,measurements_ready;
+
 
 	int counter;
 
@@ -56,12 +62,14 @@ class LidarObstacleExtraction{
 
 	geometry_msgs::Point32 check_data_valid_for_robot (const vector<pair<double,double >>& data_set,const double& ang_incr) ;
 
+	// void its_a_obstacle (vector<pair<double,double >>& data_set, double ang_incr);
+
 	sensor_msgs::LaserScan lastScan;
 
 	jumpSign firstJumpSign; 
 
 	// ros::Publisher  LMeas_talker;
-	ros::Publisher  pub_locations;
+	ros::Publisher  pub_locations, pub_after_blindspot;
 
 	geometry_msgs::PoseArray Lm_publish;
 	// swarm_cherokeys::LidarMeas msg;
@@ -79,19 +87,30 @@ class LidarObstacleExtraction{
 	utility_functions::OdomTranslaterToWorld odom_cb;
 
 	//params from parameter server
-	std::string lidarScanTopicName, robotOdomTopicName;
+	std::string lidarScanTopicName, robotOdomTopicName, extractionsWithBlindSPotPubTopicName, extractionsPubTopicName;
 	bool isShowingAllPoints,IsSimulated; //to show all points in visualizer
 	bool shouldWallMeasurmentsRemove; // false positives from wall be removed
+
+
+	// void get_Nullpts(const sensor_msgs::LaserScan& scan);
+	BlindSpotForRobotsInLidar* blindspot;
+
+	Eigen::Matrix4d homogMatrix; //homogenious translator to map frame obtain from odom
 
 	public:
 
 		LidarObstacleExtraction (ros::NodeHandle n) : _n (n) {
-			n.param <bool> ("/simulation",IsSimulated,true); //is filter run in simulation?????
-			n.param <bool> ("wallMeasurements",shouldWallMeasurmentsRemove,false); //local param. 
-			n.param <std::string> ("lidarScanTopicName",lidarScanTopicName,"/Robot1/scan");
-			n.param <std::string> ("robotOdomTopicName",robotOdomTopicName,"/Robot1/odom");
+			_n.param <bool> ("/simulation",IsSimulated,true); //is filter run in simulation?????
+			_n.param <bool> ("/wallMeasurements",shouldWallMeasurmentsRemove,false); //local param. 
+			_n.param <std::string> ("/lidarScanTopicName",lidarScanTopicName,"/Robot1/scan");
+			_n.param <std::string> ("/robotOdomTopicName",robotOdomTopicName,"/Robot1/odom");
+			_n.param <std::string> ("/extractionsPubTopicName",extractionsPubTopicName, "/lidar_extractions");
+			_n.param <std::string> ("/extractionsWithBlindSPotPubTopicName",extractionsWithBlindSPotPubTopicName, "/lidar_extractions_blindspot");
+
 			counter = 0;
 			firstJumpSign = none;
+			//RobValAngMin = 3.00;
+			//RobValAngMax = 10.0;
 			jumpLength = 0.1;
 			Max_ScanRange = 5.0;
 			Min_ScanRange = 0.1;
@@ -103,11 +122,14 @@ class LidarObstacleExtraction{
 			newScan = false;
 			IsNullMeasReady = false;
 
+			// odom_cb.reset(new utility_functions::OdomTranslaterToWorld ());
+			// utility_functions::OdomTranslaterToWorld odom_cb;
 			odom_cb;
 
 			sub = _n.subscribe<sensor_msgs::LaserScan>(lidarScanTopicName, 1, &LidarObstacleExtraction::scanCallback, this);
 			subOdom = _n.subscribe <nav_msgs::Odometry> (robotOdomTopicName, 1, &utility_functions::OdomTranslaterToWorld::odomCallback, &odom_cb);
-			pub_locations = _n.advertise <sensor_msgs::PointCloud> ("/lidar_extractions", 10); 
+			pub_locations = _n.advertise <sensor_msgs::PointCloud> (extractionsPubTopicName, 10);
+			pub_after_blindspot = _n.advertise <sensor_msgs::PointCloud> (extractionsWithBlindSPotPubTopicName, 10);
 
 			computeInsideBoxPtr.reset(new utility_functions::InsideBoxCal());
 			double x =2.70, y=2.70;
@@ -125,14 +147,13 @@ class LidarObstacleExtraction{
 				computeInsideBoxPtr->corners_of_rectangle[counter] = pt;
 				counter++;
 			}
+			blindspot = new BlindSpotForRobotsInLidar(_n);
 		}
 
 		int getNullPts(std::vector<pair<double,double >> *NullPt){
 			*NullPt=NullptsReady;
 			return counter;
 		}
-
-
 };
 
 void print (vector<pair<double,double >>& points);

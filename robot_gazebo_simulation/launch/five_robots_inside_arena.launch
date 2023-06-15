@@ -22,7 +22,7 @@ willowgarage_world.launch -->
 <node   name = "rviz_visualizer_node" 
         pkg  = "rviz" 
         type = "rviz" 
-        args = "-d $(find catabot_gazebo_simulation)/simulation.rviz" 
+        args = "-d $(arg rviz_config_path)" 
 />
 
   <param name="robot_description" command="$(find xacro)/xacro --inorder

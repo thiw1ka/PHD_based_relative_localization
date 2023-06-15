@@ -1,0 +1,18 @@
+<launch>
+
+<!-- plotter -->
+    <!-- <node       name    = "plotter_node"                  
+                pkg     = "catabot_phd_tracking"    
+                type    = "plotter_results.py"         
+                output  = "log"
+                respawn = "true"
+    /> -->
+
+    <node       name    = "plotter_node"                  
+                pkg     = "catabot_phd_tracking"    
+                type    = "seperate_results_plots.py"         
+                output  = "log"
+                respawn = "true"
+    />
+
+</launch>

@@ -1,10 +1,17 @@
 <launch>
 
-<param name = "simulation"            type = "bool"       value="true"          />
-<param name = "wallMeasurements"      type = "bool"       value="true"          />
-<param name = "lidarScanTopicName"    type = "string"     value="/Robot1/scan"  />
-<param name = "robotOdomTopicName"    type = "string"     value="/Robot1/odom"  />
-<param name = "resultTopicName"       type = "string"     value="/lidar_extractions"  />
+<param name = "simulation"                              type = "bool"       value="true"          />
+<param name = "wallMeasurements"                        type = "bool"       value="true"          />
+<param name = "lidarScanTopicName"                      type = "string"     value="/Robot1/scan"  />
+<param name = "robotOdomTopicName"                      type = "string"     value="/Robot1/odom"  />
+<param name = "resultTopicName"                         type = "string"     value="/lidar_extractions"  />
+<param name = "extractionsPubTopicName"                 type = "string"     value="/lidar_extractions"  />
+<param name = "extractionsWithBlindSPotPubTopicName"    type = "string"     value="/lidar_extractions_blindspot"  />
+<param name = "radiusForBlindspotCircle"                type = "double"     value= "0.05"/>
+<param name = "frameID"                                 type = "string"     value="Robot1/odom"  />
+
+<!-- probability list for the robots -->
+<rosparam   param = "pd_for_each_robot">        [0.8, 0.5, 0.4, 0.1, 0.6, 0.5]           </rosparam> 
 
 
 <node   name="lidar_points_extractor" 

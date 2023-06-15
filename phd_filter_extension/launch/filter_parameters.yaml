@@ -1,0 +1,28 @@
+
+
+pd_for_each_target: [1.0, 0.9, 0.8, 0.7]
+
+#filter settings
+MIN_MD_TO_MERGE: 2 #merging standard deviations
+filter_running_speed: 20 #filter running speed
+sensor_pd: false # enabel sensor PD correction
+birth_targets_cov : 5.0 #vairance of birth targets. cov = sd^2
+
+#pd using buffer
+pd_buffer_size: 0 #use buffer to calculate pd.if >0 it uses buffer value
+
+#camera 
+camera_enabled: false #let filter know camera measurements are included
+#camera_topic_name: ""
+camera_fov: 60.0
+cam_resol_x: 640.0
+cam_resol_y: 480.0
+camera_pd_inside_fov: 0.99 #probability that a target will be detected when inside fov
+
+#gazebo simulation rosbag settings
+#----------------------------------
+gazebo_sim_rosbag: false
+#camera_topic_name: "/Robot1/camera_targets"
+#measurement_topic_name: "/lidar_extractions"
+#odom_topic_name: "/Robot1/odom"
+lidar_range: 5.0 #lidar range

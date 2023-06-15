@@ -1,0 +1,11 @@
+<launch>
+
+
+<include file = "$(find phd_filter_extension)/launch/simulation_5_robots_camera_lidar_3_filter.launch" />
+
+<!-- topic is different when blindspot introduced to lidar extraction -->
+<rosparam   param = "pd_for_each_robot">        [0.9, 0.9, 0.7, 0.7, 0.9, 0.6]           </rosparam> 
+<param  name = "measurement_topic_name" type = "str"        value = "/lidar_extractions_blindspot"     />
+<param  name = "lidar_range"            type = "double"     value = "5.0"                    /> 
+
+</launch>
