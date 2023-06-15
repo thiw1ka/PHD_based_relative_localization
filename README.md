@@ -25,7 +25,9 @@ Rviz has a pre-setup topics that can be used to see the filter results.
 
 **This video shows both gazebo simulation and estimates in the rviz visulizer.**
 
-https://github.com/thiw1ka/PHD_Filter_Variable_PD_PS_Estimation/assets/45106731/4e463888-fa58-4a1c-b90c-07fd56c9001e
+
+https://github.com/thiw1ka/PHD_based_relative_localization/assets/45106731/c20672da-25bd-4897-93ff-069ac2aaf0cc
+
 
 **This video shows filter results.**
 legend -
@@ -33,9 +35,8 @@ legend -
   - yellow color box filter estimation
   - stright line - camera measurements projected to world frame
 
+https://github.com/thiw1ka/PHD_based_relative_localization/assets/45106731/4ef53e80-6d70-409f-8372-afb3971ac0e8
 
-
-https://github.com/thiw1ka/PHD_Filter_Variable_PD_PS_Estimation/assets/45106731/5a61dece-50ab-4165-9376-196f0a045f42
 
 ## Project Files
 All project files are ros based packages and includes following sub packages.
